@@ -19,3 +19,13 @@ func FindAnswersByPattern(questionID int, pattern string, offset int, pageSize i
 	}
 	return answers, nil
 }
+
+// 通过id查找answer
+func GetAnswerByID(answerID int) (*model.Answer, error) {
+	var answer model.Answer
+	err := DB.First(&answer, "id = ?", answerID).Error
+	if err != nil {
+		return nil, err
+	}
+	return &answer, nil
+}

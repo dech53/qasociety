@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-// 创建新的回复
+// CreateAnswer 创建新的回复
 func CreateAnswer(c *gin.Context) {
 	// 从上下文获取用户名
 	username, exists := c.Get("username")
@@ -43,7 +43,7 @@ func CreateAnswer(c *gin.Context) {
 	utils.ResponseSuccess(c, "添加回复成功", http.StatusOK)
 }
 
-// 搜索回复,分页查询
+// SearchAnswers 搜索回复,分页查询
 func SearchAnswers(c *gin.Context) {
 	// 从上下文获取用户名
 	username, exists := c.Get("username")

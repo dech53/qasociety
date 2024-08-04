@@ -45,22 +45,21 @@ func InitRouter() {
 			answerGroup.GET("/search", SearchAnswers)
 			//	// 删除回答
 			//	answerGroup.DELETE("/:id", DeleteAnswer)
-			//	// 评论相关路由
-			//	commentGroup := answerGroup.Group("/:answer_id/comment")
-			//	{
-			//		// 创建评论
-			//		commentGroup.POST("/create", CreateComment)
-			//		// 获取评论列表
-			//		commentGroup.GET("/", ListComments)
-			//		// 获取指定评论
-			//		commentGroup.GET("/:id", GetComment)
-			//		// 更新评论
-			//		commentGroup.PUT("/:id", UpdateComment)
-			//		// 删除评论
-			//		commentGroup.DELETE("/:id", DeleteComment)
-			//	}
+			// 评论相关路由
+			commentGroup := answerGroup.Group("/:answer_id/comment")
+			{
+				// 创建评论
+				commentGroup.POST("/create", CreateComment)
+				//		// 获取评论列表
+				//		commentGroup.GET("/", ListComments)
+				//		// 获取指定评论
+				//		commentGroup.GET("/:id", GetComment)
+				//		// 更新评论
+				//		commentGroup.PUT("/:id", UpdateComment)
+				//		// 删除评论
+				//		commentGroup.DELETE("/:id", DeleteComment)
+			}
 		}
 	}
-
 	r.Run(":8080")
 }

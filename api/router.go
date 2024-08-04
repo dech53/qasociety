@@ -25,7 +25,7 @@ func InitRouter() {
 		questionGroup.Use(middleware.JWTAuthMiddleware())
 		// 创建问题
 		questionGroup.POST("/create", CreateQuestion)
-		//// 获取问题列表
+		//// 分页查询获取问题列表
 		//questionGroup.GET("/", ListQuestions)
 		// 获取指定问题
 		questionGroup.GET("/:id", GetQuestionByID)
@@ -33,35 +33,33 @@ func InitRouter() {
 		questionGroup.PUT("/:id", UpdateQuestion)
 		// 删除问题
 		questionGroup.DELETE("/:id", DeleteQuestion)
-		//
-		//// 回答相关路由
-		//answerGroup := questionGroup.Group("/:question_id/answer")
-		//{
-		//	// 创建回答
-		//	answerGroup.POST("/create", CreateAnswer)
-		//	// 获取回答列表
-		//	answerGroup.GET("/", ListAnswers)
-		//	// 获取指定回答
-		//	answerGroup.GET("/:id", GetAnswer)
-		//	// 更新回答
-		//	answerGroup.PUT("/:id", UpdateAnswer)
-		//	// 删除回答
-		//	answerGroup.DELETE("/:id", DeleteAnswer)
-		//	// 评论相关路由
-		//	commentGroup := answerGroup.Group("/:answer_id/comment")
-		//	{
-		//		// 创建评论
-		//		commentGroup.POST("/create", CreateComment)
-		//		// 获取评论列表
-		//		commentGroup.GET("/", ListComments)
-		//		// 获取指定评论
-		//		commentGroup.GET("/:id", GetComment)
-		//		// 更新评论
-		//		commentGroup.PUT("/:id", UpdateComment)
-		//		// 删除评论
-		//		commentGroup.DELETE("/:id", DeleteComment)
-		//	}
-		//}
+		// 回答相关路由
+		answerGroup := questionGroup.Group("/:question_id/answer")
+		{
+			answerGroup.Use(middleware.JWTAuthMiddleware())
+			// 创建回答
+			answerGroup.POST("/create", CreateAnswer)
+			//	// 获取回答列表
+			//	answerGroup.GET("/", ListAnswers)
+			//	// 获取指定回答
+			//	answerGroup.GET("/:id", GetAnswer)
+			//	// 删除回答
+			//	answerGroup.DELETE("/:id", DeleteAnswer)
+			//	// 评论相关路由
+			//	commentGroup := answerGroup.Group("/:answer_id/comment")
+			//	{
+			//		// 创建评论
+			//		commentGroup.POST("/create", CreateComment)
+			//		// 获取评论列表
+			//		commentGroup.GET("/", ListComments)
+			//		// 获取指定评论
+			//		commentGroup.GET("/:id", GetComment)
+			//		// 更新评论
+			//		commentGroup.PUT("/:id", UpdateComment)
+			//		// 删除评论
+			//		commentGroup.DELETE("/:id", DeleteComment)
+			//	}
+		}
 	}
 
 	r.Run(":8080")

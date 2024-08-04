@@ -22,5 +22,16 @@
 - `content`: 评论内容
 - `created_at`: 创建时间
 
-**路由分析**
+#### **路由分析**
 
+**用户路由组**
+
+`/user/login`用户登录
+
+`/user/register`用户注册
+
+##### 问题相关路由
+
+`/question/create`创建问题
+
+`/question/:id`获取指定id的问题

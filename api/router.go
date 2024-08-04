@@ -27,12 +27,12 @@ func InitRouter() {
 		questionGroup.POST("/create", CreateQuestion)
 		//// 获取问题列表
 		//questionGroup.GET("/", ListQuestions)
-		//// 获取指定问题
-		//questionGroup.GET("/:id", GetQuestion)
-		//// 更新问题
-		//questionGroup.PUT("/:id", UpdateQuestion)
-		//// 删除问题
-		//questionGroup.DELETE("/:id", DeleteQuestion)
+		// 获取指定问题
+		questionGroup.GET("/:id", GetQuestionByID)
+		// 更新问题
+		questionGroup.PUT("/:id", UpdateQuestion)
+		// 删除问题
+		questionGroup.DELETE("/:id", DeleteQuestion)
 		//
 		//// 回答相关路由
 		//answerGroup := questionGroup.Group("/:question_id/answer")

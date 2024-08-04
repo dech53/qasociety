@@ -6,12 +6,14 @@ import (
 	"qasociety/service"
 	"qasociety/service/dao"
 	"qasociety/utils"
+	"strconv"
 )
 
 // CreateQuestion 创建问题
 func CreateQuestion(c *gin.Context) {
 	// 从上下文中获取用户名
 	username, exists := c.Get("username")
+	//头部验证
 	if !exists {
 		utils.ResponseFail(c, "用户未认证", http.StatusUnauthorized)
 		return
@@ -38,4 +40,65 @@ func CreateQuestion(c *gin.Context) {
 	}
 	// 返回成功响应
 	utils.ResponseSuccess(c, "问题创建成功", http.StatusOK)
+}
+
+// 获取指定问题
+func GetQuestionByID(c *gin.Context) {
+	_, exists := c.Get("username")
+	//头部验证
+	if !exists {
+		utils.ResponseFail(c, "用户未认证", http.StatusUnauthorized)
+		return
+	}
+	//获取请求ID
+	idStr := c.Param("id")
+	//ID转int
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		utils.ResponseFail(c, "无效的问题 ID", http.StatusBadRequest)
+		return
+	}
+	//通过ID获取问题
+	question, err := service.GetQuestionByID(id)
+	if err != nil {
+		utils.ResponseFail(c, "获取问题失败", http.StatusInternalServerError)
+		return
+	}
+	utils.ResponseSuccess(c, question, http.StatusOK)
+}
+
+func UpdateQuestion(c *gin.Context) {
+	id, err := utils.JudgeID(c)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
+		return
+	}
+	title := c.PostForm("title")
+	content := c.PostForm("content")
+	// 参数验证
+	if title == "" || content == "" {
+		utils.ResponseFail(c, "标题和内容不能为空", http.StatusBadRequest)
+		return
+	}
+	err = service.UpdateQuestion(id, title, content)
+	if err != nil {
+		utils.ResponseFail(c, "更新问题失败", http.StatusInternalServerError)
+		return
+	}
+	utils.ResponseSuccess(c, "更新问题成功", http.StatusOK)
+}
+
+// 删除问题
+func DeleteQuestion(c *gin.Context) {
+	id, err := utils.JudgeID(c)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
+		return
+	}
+	err = service.DeleteQuestion(id)
+	if err != nil {
+		utils.ResponseFail(c, err, http.StatusInternalServerError)
+		return
+	}
+	utils.ResponseSuccess(c, "删除成功", http.StatusOK)
 }

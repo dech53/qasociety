@@ -3,7 +3,6 @@ package model
 import "time"
 
 // Question 代表问题表
-// Question 代表问题表
 type Question struct {
 	ID          int       `json:"id" gorm:"primaryKey;autoIncrement;unique;not null"`
 	UserID      int       `json:"user_id" gorm:"index;not null"` // 关联用户ID

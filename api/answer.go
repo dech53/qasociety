@@ -64,12 +64,8 @@ func SearchAnswers(c *gin.Context) {
 		utils.ResponseFail(c, "无效的 ID", http.StatusBadRequest)
 		return
 	}
-	//获取查询标志
-	pattern := c.PostForm("pattern")
-	if pattern == "" {
-		utils.ResponseFail(c, "查询标志为空", http.StatusBadRequest)
-		return
-	}
+	//获取查询标志,默认值为空
+	pattern := c.DefaultPostForm("pattern", "")
 	//分页
 	pageStr := c.DefaultPostForm("page", "1")
 	page, err := strconv.Atoi(pageStr)

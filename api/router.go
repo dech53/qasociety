@@ -50,12 +50,8 @@ func InitRouter() {
 			{
 				// 创建评论
 				commentGroup.POST("/create", CreateComment)
-				//		// 获取评论列表
-				//		commentGroup.GET("/", ListComments)
-				//		// 获取指定评论
-				//		commentGroup.GET("/:id", GetComment)
-				//		// 更新评论
-				//		commentGroup.PUT("/:id", UpdateComment)
+				// 分页查询获取评论列表
+				commentGroup.GET("/", ListComments)
 				//		// 删除评论
 				//		commentGroup.DELETE("/:id", DeleteComment)
 			}

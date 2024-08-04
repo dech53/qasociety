@@ -32,6 +32,10 @@
 
 ##### 问题相关路由
 
-`/question/create`创建问题
+**POST**`/question/create`创建问题
 
-`/question/:id`获取指定id的问题
+**GET**`/question/:id`获取指定id的问题
+
+**PUT**`/question/:id`更新指定id的问题
+
+**DELETE**`/question/:id`删除指定id的问题

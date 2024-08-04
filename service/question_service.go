@@ -19,12 +19,18 @@ func AddQuestion(userID int, title, content string) error {
 	// 将问题存储到数据库
 	return dao.AddQuestion(question)
 }
+
+// 通过ID查找问题
 func GetQuestionByID(questionID int) (*model.Question, error) {
 	return dao.GetQuestionByID(questionID)
 }
+
+// 通过ID更新问题
 func UpdateQuestion(questionID int, title, content string) error {
 	return dao.UpdateQuestion(questionID, title, content)
 }
+
+// 通过ID删除问题
 func DeleteQuestion(questionID int) error {
 	return dao.DeleteQuestion(questionID)
 }

@@ -34,15 +34,15 @@ func InitRouter() {
 		// 删除问题
 		questionGroup.DELETE("/:id", DeleteQuestion)
 		// 回答相关路由
-		answerGroup := questionGroup.Group("/:question_id/answer")
+		answerGroup := questionGroup.Group("/:id/answer")
 		{
 			answerGroup.Use(middleware.JWTAuthMiddleware())
 			// 创建回答
 			answerGroup.POST("/create", CreateAnswer)
 			//	// 获取回答列表
 			//	answerGroup.GET("/", ListAnswers)
-			//	// 获取指定回答
-			//	answerGroup.GET("/:id", GetAnswer)
+			// 分页搜索回复
+			answerGroup.GET("/search", SearchAnswers)
 			//	// 删除回答
 			//	answerGroup.DELETE("/:id", DeleteAnswer)
 			//	// 评论相关路由

@@ -42,13 +42,11 @@ func CreateQuestion(c *gin.Context) {
 	utils.ResponseSuccess(c, "问题创建成功", http.StatusOK)
 }
 
-// 获取指定问题
+// GetQuestionByID 获取指定问题
 func GetQuestionByID(c *gin.Context) {
-	_, exists := c.Get("username")
-	//头部验证
-	if !exists {
-		utils.ResponseFail(c, "用户未认证", http.StatusUnauthorized)
-		return
+	_, err := utils.GetUserID(c)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusUnauthorized)
 	}
 	//获取请求ID
 	idStr := c.Param("id")
@@ -67,6 +65,7 @@ func GetQuestionByID(c *gin.Context) {
 	utils.ResponseSuccess(c, question, http.StatusOK)
 }
 
+// UpdateQuestion 更新问题
 func UpdateQuestion(c *gin.Context) {
 	id, err := utils.JudgeID(c)
 	if err != nil {
@@ -88,7 +87,7 @@ func UpdateQuestion(c *gin.Context) {
 	utils.ResponseSuccess(c, "更新问题成功", http.StatusOK)
 }
 
-// 删除问题
+// DeleteQuestion 删除问题
 func DeleteQuestion(c *gin.Context) {
 	id, err := utils.JudgeID(c)
 	if err != nil {

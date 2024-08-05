@@ -38,5 +38,15 @@ func UpdateQuestion(questionID int, title, content string) error {
 	return nil
 }
 func DeleteQuestion(questionID int) error {
+	answers, err := GetAllAnswers(questionID)
+	if err != nil {
+		return err
+	}
+	for _, answer := range answers {
+		err = RemoveAnswer(&answer)
+	}
+	if err != nil {
+		return err
+	}
 	return DB.Delete(&model.Question{}, questionID).Error
 }

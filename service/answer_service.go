@@ -28,3 +28,6 @@ func SearchAnswersByPattern(id int, pattern string, page, pageSize int) ([]model
 	}
 	return answers, nil
 }
+func DeleteAnswer(answer *model.Answer) error {
+	return dao.RemoveAnswer(answer)
+}

@@ -35,3 +35,10 @@ func JudgeID(c *gin.Context) (int, error) {
 	}
 	return id, nil
 }
+func GetUserID(c *gin.Context) (int, error) {
+	username, exists := c.Get("username")
+	if !exists {
+		return 0, errors.New("用户未认证")
+	}
+	return dao.GetUserIDByUsername(username.(string))
+}

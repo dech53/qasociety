@@ -43,8 +43,8 @@ func InitRouter() {
 			//	answerGroup.GET("/", ListAnswers)
 			// 分页搜索回复
 			answerGroup.GET("/search", SearchAnswers)
-			//	// 删除回答
-			//	answerGroup.DELETE("/:id", DeleteAnswer)
+			// 删除回答
+			answerGroup.DELETE("/:answer_id", DeleteAnswer)
 			// 评论相关路由
 			commentGroup := answerGroup.Group("/:answer_id/comment")
 			{
@@ -52,8 +52,8 @@ func InitRouter() {
 				commentGroup.POST("/create", CreateComment)
 				// 分页查询获取评论列表
 				commentGroup.GET("/", ListComments)
-				//		// 删除评论
-				//		commentGroup.DELETE("/:id", DeleteComment)
+				// 删除评论
+				commentGroup.DELETE("/:comment_id", DeleteComment)
 			}
 		}
 	}

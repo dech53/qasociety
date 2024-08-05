@@ -11,16 +11,9 @@ import (
 
 // CreateComment 创建评论
 func CreateComment(c *gin.Context) {
-	// 从上下文获取用户名
-	username, exists := c.Get("username")
-	if !exists {
-		utils.ResponseFail(c, "用户未认证", http.StatusUnauthorized)
-		return
-	}
-	// 根据用户名获取用户ID
-	userID, err := dao.GetUserIDByUsername(username.(string))
-	if err != nil || userID == 0 {
-		utils.ResponseFail(c, "用户不存在", http.StatusUnauthorized)
+	userID, err := utils.GetUserID(c)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusUnauthorized)
 		return
 	}
 	// 获取请求ID和评论对应的AnswerID
@@ -60,10 +53,9 @@ func CreateComment(c *gin.Context) {
 
 // ListComments 分页查询获取评论列表
 func ListComments(c *gin.Context) {
-	_, exists := c.Get("username")
-	if !exists {
-		utils.ResponseFail(c, "用户未认证", http.StatusUnauthorized)
-		return
+	_, err := utils.GetUserID(c)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusBadGateway)
 	}
 	// 获取请求ID和评论对应的AnswerID
 	idStr := c.Param("id")
@@ -94,7 +86,9 @@ func ListComments(c *gin.Context) {
 	}
 	//每页记录数
 	pageSize := 5
-	comments, err := service.GetCommentsByAnswerID(answerID, page, pageSize)
+	//评论排列顺序，默认升序
+	order := c.DefaultPostForm("order", "")
+	comments, err := service.GetComments(answerID, page, pageSize, order)
 	if err != nil {
 		utils.ResponseFail(c, "搜索错误", http.StatusInternalServerError)
 		return
@@ -104,4 +98,38 @@ func ListComments(c *gin.Context) {
 		return
 	}
 	utils.ResponseSuccess(c, comments, http.StatusOK)
+}
+
+// DeleteComment 删除评论
+func DeleteComment(c *gin.Context) {
+	userID, err := utils.GetUserID(c)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	// 获取评论 ID
+	commentIDStr := c.Param("comment_id")
+	commentID, err := strconv.Atoi(commentIDStr)
+	if err != nil {
+		utils.ResponseFail(c, "无效的评论 ID", http.StatusBadRequest)
+		return
+	}
+	// 检查评论是否存在
+	comment, err := service.GetCommentByID(commentID)
+	if err != nil {
+		utils.ResponseFail(c, "评论不存在", http.StatusNotFound)
+		return
+	}
+	// 检查用户是否有权限删除评论（例如，用户是否为评论的创建者）
+	if comment.UserID != userID {
+		utils.ResponseFail(c, "没有权限删除该评论", http.StatusForbidden)
+		return
+	}
+	// 删除评论
+	err = service.DeleteComment(commentID)
+	if err != nil {
+		utils.ResponseFail(c, "删除评论失败", http.StatusInternalServerError)
+		return
+	}
+	utils.ResponseSuccess(c, "评论删除成功", http.StatusOK)
 }

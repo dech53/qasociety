@@ -11,16 +11,9 @@ import (
 
 // CreateAnswer 创建新的回复
 func CreateAnswer(c *gin.Context) {
-	// 从上下文获取用户名
-	username, exists := c.Get("username")
-	if !exists {
-		utils.ResponseFail(c, "用户未认证", http.StatusUnauthorized)
-		return
-	}
-	// 根据用户名获取用户ID
-	userID, err := dao.GetUserIDByUsername(username.(string))
-	if err != nil || userID == 0 {
-		utils.ResponseFail(c, "用户不存在", http.StatusUnauthorized)
+	userID, err := utils.GetUserID(c)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusUnauthorized)
 		return
 	}
 	// 获取请求ID
@@ -40,21 +33,21 @@ func CreateAnswer(c *gin.Context) {
 		utils.ResponseFail(c, err.Error(), http.StatusBadGateway)
 		return
 	}
+	//通过问题ID更新question数据的更新时间
+	question, err := dao.GetQuestionByID(id)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusBadGateway)
+		return
+	}
+	err = dao.UpdateQuestion(question.ID, question.Title, question.Content)
 	utils.ResponseSuccess(c, "添加回复成功", http.StatusOK)
 }
 
 // SearchAnswers 搜索回复,分页查询
 func SearchAnswers(c *gin.Context) {
-	// 从上下文获取用户名
-	username, exists := c.Get("username")
-	if !exists {
-		utils.ResponseFail(c, "用户未认证", http.StatusUnauthorized)
-		return
-	}
-	// 根据用户名获取用户ID
-	userID, err := dao.GetUserIDByUsername(username.(string))
-	if err != nil || userID == 0 {
-		utils.ResponseFail(c, "用户不存在", http.StatusUnauthorized)
+	_, err := utils.GetUserID(c)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusUnauthorized)
 		return
 	}
 	//获取查询的问题ID
@@ -85,4 +78,37 @@ func SearchAnswers(c *gin.Context) {
 		return
 	}
 	utils.ResponseSuccess(c, answers, http.StatusOK)
+}
+
+// DeleteAnswer 删除回答
+func DeleteAnswer(c *gin.Context) {
+	userID, err := utils.GetUserID(c)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	AnswerIdStr := c.Param("answer_id")
+	answerId, err := strconv.Atoi(AnswerIdStr)
+	if err != nil {
+		utils.ResponseFail(c, "无效的ID", http.StatusBadRequest)
+		return
+	}
+	answer, err := dao.GetAnswerByID(answerId)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusBadGateway)
+		return
+	}
+	if answer.UserID != userID {
+		utils.ResponseFail(c, "无权删除回复", http.StatusUnauthorized)
+		return
+	}
+	err = service.DeleteAnswer(answer)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	utils.ResponseSuccess(c, "删除成功", http.StatusOK)
+}
+func DeleteAnswers(c *gin.Context) {
+
 }

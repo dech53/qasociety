@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"qasociety/model"
 	"qasociety/service/dao"
 	"time"
@@ -33,4 +34,21 @@ func UpdateQuestion(questionID int, title, content string) error {
 // 通过ID删除问题
 func DeleteQuestion(questionID int) error {
 	return dao.DeleteQuestion(questionID)
+}
+
+// pattern不为空时使用这个
+func SearchQuestionsByPattern(pattern, order string, page, pageSize int) ([]model.Question, error) {
+	// 计算分页的起始位置
+	offset := (page - 1) * pageSize
+	// 调用 DAO 层函数进行分页查询
+	questions, err := dao.FindQuestionByPattern(pattern, order, offset, pageSize)
+	if err != nil {
+		return nil, errors.New(err.Error())
+	}
+	return questions, nil
+}
+
+// pattern为空时使用这个,从redis中获取question
+func GetQuestionsByRedis() ([]model.Question, error) {
+	return dao.GetQuestionsByRedis()
 }

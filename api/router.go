@@ -25,8 +25,8 @@ func InitRouter() {
 		questionGroup.Use(middleware.JWTAuthMiddleware())
 		// 创建问题
 		questionGroup.POST("/create", CreateQuestion)
-		//// 分页查询获取问题列表
-		//questionGroup.GET("/", ListQuestions)
+		// 分页查询获取问题列表
+		questionGroup.GET("/", ListQuestions)
 		// 获取指定问题
 		questionGroup.GET("/:id", GetQuestionByID)
 		// 更新问题
@@ -40,6 +40,7 @@ func InitRouter() {
 			// 创建回答
 			answerGroup.POST("/create", CreateAnswer)
 			//	// 获取回答列表
+			//直接用SearchAnswers但是不传入参数pattern就可以实现Answer列表
 			//	answerGroup.GET("/", ListAnswers)
 			// 分页搜索回复
 			answerGroup.GET("/search", SearchAnswers)

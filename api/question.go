@@ -101,3 +101,33 @@ func DeleteQuestion(c *gin.Context) {
 	}
 	utils.ResponseSuccess(c, "删除成功", http.StatusOK)
 }
+
+// ListQuestions 分页查询展示问题
+//
+//	直接从redis热榜中获取
+func ListQuestions(c *gin.Context) {
+	_, err := utils.GetUserID(c)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	//获取查询标志,默认值为空
+	//pattern := c.PostForm("pattern")
+	//分页
+	pageStr := c.DefaultPostForm("page", "1")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page <= 0 {
+		utils.ResponseFail(c, "无效的页码", http.StatusBadRequest)
+		return
+	}
+	//每页记录数
+	//pageSize := 5
+	//order := c.DefaultPostForm("order", "")
+	//  存在效率问题,是否可以实现redis中的分页查询
+	questions, err := service.GetQuestionsByRedis()
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	utils.ResponseSuccess(c, questions, http.StatusOK)
+}

@@ -109,6 +109,3 @@ func DeleteAnswer(c *gin.Context) {
 	}
 	utils.ResponseSuccess(c, "删除成功", http.StatusOK)
 }
-func DeleteAnswers(c *gin.Context) {
-
-}

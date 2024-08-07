@@ -10,8 +10,10 @@ func main() {
 	dao.InitDB()
 	//初始化redis
 	dao.InitRdb()
-	//多线程,设置定时器,定期清除redis中的当日回复数缓存
-	go dao.StartCacheCleanup()
+	//24h后问题数量清零
+	go dao.SetAnswerCountZero()
+	//定期更新redis中的热榜前十问题
+	go dao.StartUpdateRedisCache()
 	//初始化路由
 	api.InitRouter()
 }

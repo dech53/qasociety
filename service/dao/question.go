@@ -10,23 +10,11 @@ import (
 )
 
 func AddQuestion(question model.Question) error {
-	id := GetTheLastID()
-	question.ID = id + 1
-	//缓存中设置初始ID值为0,过期时间为永久
-	ctx := context.Background()
-	questionJson, err := json.Marshal(question)
-	if err != nil {
-		return err
+	questionACount := model.QuestionAnswerCount{
+		QuestionID:  question.ID,
+		AnswerCount: 0,
 	}
-	//answerCount := 0
-	// 设置set以score排序
-	_, err = Rdb.ZAdd(ctx, "questions", &redis.Z{
-		Score:  5,
-		Member: string(questionJson),
-	}).Result()
-	if err != nil {
-		return err
-	}
+	DB.Model(&model.QuestionAnswerCount{}).Create(&questionACount)
 	return DB.Model(&model.Question{}).Create(&question).Error
 }
 func GetQuestionByID(questionID int) (*model.Question, error) {
@@ -69,6 +57,7 @@ func UpdateQuestion(questionID int, title, content string) error {
 	return nil
 }
 func DeleteQuestion(questionID int) error {
+	ctx := context.Background()
 	answers, err := GetAllAnswers(questionID)
 	if err != nil {
 		return err
@@ -79,8 +68,24 @@ func DeleteQuestion(questionID int) error {
 	if err != nil {
 		return err
 	}
+	question, err := GetQuestionByID(questionID)
+	if err != nil {
+		return err
+	}
+	questionJson, err := json.Marshal(question)
+	DB.Delete(&model.QuestionAnswerCount{}, questionID)
+	Rdb.ZRem(ctx, "questions", string(questionJson))
+	questions, err := GetTopQuestions("desc", 0, 1)
+	question, err = GetQuestionByID(questions[0].QuestionID)
+	questionJson, err = json.Marshal(question)
+	Rdb.ZAdd(ctx, "questions", &redis.Z{
+		Score:  float64(questions[0].AnswerCount),
+		Member: string(questionJson),
+	})
 	return DB.Delete(&model.Question{}, questionID).Error
 }
+
+// FindQuestionByPattern 通过特征查找问题
 func FindQuestionByPattern(pattern, order string, offset, pageSize int) ([]model.Question, error) {
 	var questions []model.Question
 	err := DB.Where("content LIKE ?", "%"+pattern+"%").
@@ -93,23 +98,13 @@ func FindQuestionByPattern(pattern, order string, offset, pageSize int) ([]model
 	}
 	return questions, nil
 }
-func GetQuestionsCount() (int, error) {
-	var count int64
-	err := DB.Model(&model.Question{}).Count(&count).Error
-	if err != nil {
-		return 0, err
-	}
-	return int(count), nil
-}
-func GetTheLastID() int {
-	var max int
-	DB.Model(&model.Question{}).Select("max(id) as id").Scan(&max)
-	return max
-}
+
+// GetQuestionsByRedis 从redis中获取前十的问题
 func GetQuestionsByRedis() ([]model.Question, error) {
 	//返回一个Object
 	var questions []model.Question
 	ctx := context.Background()
+	//需要修改成类似gorm中分页查询的形式,添加offset之类的
 	member, err := Rdb.ZRange(ctx, "questions", 0, -1).Result()
 	if err != nil {
 		return nil, err
@@ -119,6 +114,19 @@ func GetQuestionsByRedis() ([]model.Question, error) {
 		err = json.Unmarshal([]byte(v), &question)
 		questions = append(questions, question)
 	}
+	if err != nil {
+		return nil, err
+	}
+	return questions, nil
+}
+
+// GetTopQuestions 获取新增回复数前十的问题
+func GetTopQuestions(order string, offset, pageSize int) ([]model.QuestionAnswerCount, error) {
+	var questions []model.QuestionAnswerCount
+	err := DB.Order("answer_count " + order).
+		Offset(offset).
+		Limit(pageSize).
+		Find(&questions).Error
 	if err != nil {
 		return nil, err
 	}

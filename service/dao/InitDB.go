@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"time"
 )
 
 var (
@@ -28,4 +29,16 @@ func InitDB() {
 	}
 	DB = db
 	fmt.Println("数据库连接成功")
+}
+
+// SetAnswerCountZero 24h后将question_answer_counts中的新增count数清零
+func SetAnswerCountZero() {
+	//时间可以调整实现半小时内新增之类的
+	ticker := time.NewTicker(24 * time.Hour)
+	for range ticker.C {
+		setCount()
+	}
+}
+func setCount() {
+	DB.Exec("UPDATE question_answer_counts SET answer_count = 0")
 }

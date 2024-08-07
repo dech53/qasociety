@@ -25,14 +25,15 @@ func InitRouter() {
 		questionGroup.Use(middleware.JWTAuthMiddleware())
 		// 创建问题
 		questionGroup.POST("/create", CreateQuestion)
-		// 分页查询获取问题列表
-		questionGroup.GET("/", ListQuestions)
+		// 分页查询获取热门问题列表
+		questionGroup.GET("/topic10", ListQuestions)
 		// 获取指定问题
 		questionGroup.GET("/:id", GetQuestionByID)
 		// 更新问题
 		questionGroup.PUT("/:id", UpdateQuestion)
 		// 删除问题
 		questionGroup.DELETE("/:id", DeleteQuestion)
+		//添加查找功能
 		// 回答相关路由
 		answerGroup := questionGroup.Group("/:id/answer")
 		{

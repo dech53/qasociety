@@ -124,9 +124,14 @@ func ListQuestions(c *gin.Context) {
 	//pageSize := 5
 	//order := c.DefaultPostForm("order", "")
 	//  存在效率问题,是否可以实现redis中的分页查询
+	//此处无需做修改,只需要修改redis的增添逻辑即可
 	questions, err := service.GetQuestionsByRedis()
 	if err != nil {
 		utils.ResponseFail(c, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if questions == nil || len(questions) == 0 {
+		utils.ResponseFail(c, "问题为空", http.StatusBadRequest)
 		return
 	}
 	utils.ResponseSuccess(c, questions, http.StatusOK)

@@ -29,3 +29,9 @@ type Comment struct {
 	Content     string    `json:"content" gorm:"type:text;not null"`
 	CreatedTime time.Time `json:"created_time" gorm:"autoCreateTime"` // 自动创建时间
 }
+
+// QuestionAnswerCount 代表问题及其回答数量的表
+type QuestionAnswerCount struct {
+	QuestionID  int `json:"question_id" gorm:"primaryKey;unique;not null"`
+	AnswerCount int `json:"answer_count" gorm:"not null"`
+}

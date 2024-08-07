@@ -8,44 +8,33 @@ import (
 	"time"
 )
 
-// StartCacheCleanup 10s 后清空 answerCount
-func StartCacheCleanup() {
+// StartUpdateRedisCache 开始更新redis中存放的热门问题
+func StartUpdateRedisCache() {
 	ctx := context.Background()
-	// 清理周期，测试阶段用 10s，实际使用采取 24h 刷新制git
-	ticker := time.NewTicker(24 * time.Hour)
+	ticker := time.NewTicker(2 * time.Second)
 	for range ticker.C {
-		err := cleanupRedisCache(ctx)
-		if err != nil {
-			log.Printf("Error cleaning up Redis cache: %v", err)
-		}
+		Rdb.ZRemRangeByRank(ctx, "questions", 0, -1)
+		updateRedis()
 	}
 }
 
-// cleanupRedisCache 将 answerCount 清零
-func cleanupRedisCache(ctx context.Context) error {
-	//删除整个list
-	Rdb.Del(ctx, "questions")
-	pageSize := 5
-	questionCount, _ := GetQuestionsCount()
-	offset := 0
-	for offset < questionCount+pageSize {
-		questions, err := FindQuestionByPattern("", "", offset, pageSize)
-		if err != nil {
-			return err
-		}
-		for _, question := range questions {
-			// 将 question 序列化为 JSON 字符串
-			questionJson, err := json.Marshal(question)
-			// 将 answerCount 重置为 0
-			_, err = Rdb.ZAdd(ctx, "questions", &redis.Z{
-				Score:  0,
-				Member: string(questionJson),
-			}).Result()
-			if err != nil {
-				return err
-			}
-		}
-		offset += pageSize
+// 从mysql中获取新增数量前十的热门问题
+func updateRedis() {
+	ctx := context.Background()
+	questionACs, err := GetTopQuestions("desc", 0, 10)
+	if err != nil {
+		log.Printf("Error finding questions: %v", err)
 	}
-	return nil
+	for _, questionAC := range questionACs {
+		question, err := GetQuestionByID(questionAC.QuestionID)
+		questionJson, err := json.Marshal(question)
+		Rdb.ZAdd(ctx, "questions", &redis.Z{
+			Score:  float64(questionAC.AnswerCount),
+			Member: string(questionJson),
+		})
+		if err != nil {
+			log.Printf("Error finding questions: %v", err)
+		}
+	}
+
 }

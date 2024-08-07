@@ -1,24 +1,12 @@
 package dao
 
 import (
-	"context"
-	"encoding/json"
-	"errors"
 	"qasociety/model"
 )
 
 // AddAnswer 添加回复
 func AddAnswer(answer model.Answer) error {
-	//问题ID下产生回复就在缓存中将值加1
-	ctx := context.Background()
-	question, _ := GetQuestionByID(answer.QuestionID)
-	if question == nil {
-		return errors.New("问题不存在")
-	}
-	questionJson, _ := json.Marshal(question)
-	Rdb.ZIncrBy(ctx, "questions", 1, string(questionJson))
-	//利用缓存保存每天question下新增的answer个数
-	//自增的缓存无法被设置过期时间
+	DB.Exec("UPDATE question_answer_counts SET answer_count = answer_count + 1 WHERE question_id = ?", answer.QuestionID)
 	return DB.Model(&model.Answer{}).Create(&answer).Error
 }
 

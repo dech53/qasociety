@@ -17,6 +17,10 @@ func InitRouter() {
 		userGroup.POST("/register", Register)
 		// 用户登录
 		userGroup.POST("/login", Login)
+		// 请求重置密码
+		userGroup.POST("/request_password_reset", RequestPasswordReset)
+		//执行重置密码
+		userGroup.POST("/reset_password", ResetPassword)
 	}
 	// 问题相关路由
 	questionGroup := r.Group("/question")
@@ -26,14 +30,15 @@ func InitRouter() {
 		// 创建问题
 		questionGroup.POST("/create", CreateQuestion)
 		// 分页查询获取热门问题列表
-		questionGroup.GET("/topic10", ListQuestions)
+		questionGroup.GET("/topic10", TopQuestions)
 		// 获取指定问题
 		questionGroup.GET("/:id", GetQuestionByID)
 		// 更新问题
 		questionGroup.PUT("/:id", UpdateQuestion)
 		// 删除问题
 		questionGroup.DELETE("/:id", DeleteQuestion)
-		//添加查找功能
+		//添加正常的获取问题列表更能
+		questionGroup.GET("/", ListQuestions)
 		// 回答相关路由
 		answerGroup := questionGroup.Group("/:id/answer")
 		{

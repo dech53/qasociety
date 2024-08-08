@@ -6,6 +6,7 @@ import (
 	"qasociety/api/middleware"
 	"qasociety/model"
 	"qasociety/service/dao"
+	"strconv"
 	"time"
 )
 
@@ -65,4 +66,21 @@ func LoginUser(username, password, email string) (string, error) {
 		return "", err
 	}
 	return tokenString, nil
+}
+func GetUserByPattern(pattern, value string) (model.User, error) {
+	return dao.GetUserByPattern(pattern, value)
+}
+func ResetRequest(code string, user model.User) (bool, error) {
+	userID := strconv.Itoa(user.ID)
+	return dao.SetCodeRedis(userID, code)
+}
+func GetExpireTime(user model.User) (time.Duration, error) {
+	userID := strconv.Itoa(user.ID)
+	return dao.GetExpireTime(userID)
+}
+func VerifyCode(email, code string) (bool, error) {
+	return dao.VerifyCode(email, code)
+}
+func ResetPassword(email, newPassword string) error {
+	return dao.ResetPassword(email, newPassword)
 }

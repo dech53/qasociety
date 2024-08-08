@@ -36,5 +36,4 @@ func updateRedis() {
 			log.Printf("Error finding questions: %v", err)
 		}
 	}
-
 }

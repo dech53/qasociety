@@ -102,10 +102,10 @@ func DeleteQuestion(c *gin.Context) {
 	utils.ResponseSuccess(c, "删除成功", http.StatusOK)
 }
 
-// ListQuestions 分页查询展示问题
+// TopQuestions 分页查询展示问题
 //
 //	直接从redis热榜中获取
-func ListQuestions(c *gin.Context) {
+func TopQuestions(c *gin.Context) {
 	_, err := utils.GetUserID(c)
 	if err != nil {
 		utils.ResponseFail(c, err.Error(), http.StatusUnauthorized)
@@ -126,6 +126,34 @@ func ListQuestions(c *gin.Context) {
 	//  存在效率问题,是否可以实现redis中的分页查询
 	//此处无需做修改,只需要修改redis的增添逻辑即可
 	questions, err := service.GetQuestionsByRedis()
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if questions == nil || len(questions) == 0 {
+		utils.ResponseFail(c, "问题为空", http.StatusBadRequest)
+		return
+	}
+	utils.ResponseSuccess(c, questions, http.StatusOK)
+}
+
+// ListQuestions 常规方式通过update_time排序获取问题
+func ListQuestions(c *gin.Context) {
+	_, err := utils.GetUserID(c)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	pageStr := c.DefaultPostForm("page", "1")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page <= 0 {
+		utils.ResponseFail(c, "无效的页码", http.StatusBadRequest)
+		return
+	}
+	pattern := c.DefaultPostForm("pattern", "")
+	pageSize := 5
+	order := c.DefaultPostForm("order", "")
+	questions, err := service.SearchQuestionsByPattern(pattern, order, page, pageSize)
 	if err != nil {
 		utils.ResponseFail(c, err.Error(), http.StatusInternalServerError)
 		return

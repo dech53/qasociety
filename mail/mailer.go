@@ -10,7 +10,7 @@ func SendEmailCode(code, email string) error {
 	host := "smtp.qq.com"
 	port := 25
 	userName := "2496916936@qq.com"
-	passWord := "dqvuuosdruqjeaca"
+	passWord := ""
 	m := gomail.NewMessage()
 	m.SetHeader("From", userName)
 	m.SetHeader("From", "dech53"+"<"+userName+">")

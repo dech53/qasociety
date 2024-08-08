@@ -44,6 +44,8 @@ func SelectPassword(key string, pattern string) (string, error) {
 	}
 	return user.Password, nil
 }
+
+// GetUserIDByUsername 通过用户ID查找用户名
 func GetUserIDByUsername(username string) (int, error) {
 	var user model.User
 	result := DB.Model(&model.User{}).Where("username = ?", username).First(&user)
@@ -56,6 +58,8 @@ func GetUserIDByUsername(username string) (int, error) {
 	}
 	return user.ID, nil // 返回用户ID
 }
+
+// GetUserByPattern 通过pattern查找用户
 func GetUserByPattern(pattern, value string) (model.User, error) {
 	var user model.User
 	err := DB.Model(&model.User{}).Where(pattern+" = ?", value).First(&user).Error
@@ -64,16 +68,22 @@ func GetUserByPattern(pattern, value string) (model.User, error) {
 	}
 	return user, err
 }
+
+// SetCodeRedis 设置验证码到redis
 func SetCodeRedis(userID string, code string) (bool, error) {
 	ctx := context.Background()
 	result, err := Rdb.SetNX(ctx, userID, code, 3*time.Minute).Result()
 	return result, err
 }
+
+// GetExpireTime 获取过期时间
 func GetExpireTime(userID string) (time.Duration, error) {
 	ctx := context.Background()
 	restTime, err := Rdb.TTL(ctx, userID).Result()
 	return restTime, err
 }
+
+// VerifyCode 校验验证码
 func VerifyCode(email, code string) (bool, error) {
 	ctx := context.Background()
 	user, err := GetUserByPattern("email", email)
@@ -87,6 +97,8 @@ func VerifyCode(email, code string) (bool, error) {
 	}
 	return true, nil
 }
+
+// ResetPassword 执行重置密码
 func ResetPassword(email, newPassword string) error {
 	user, err := GetUserByPattern("email", email)
 	if err != nil {

@@ -1,10 +1,12 @@
 package api
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"qasociety/mail"
 	"qasociety/service"
+	"qasociety/service/dao"
 	"qasociety/utils"
 	"strconv"
 )
@@ -32,11 +34,22 @@ func Login(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 	email := c.PostForm("email")
-	token, err := service.LoginUser(username, password, email)
+	info := utils.GetUserAgent(c)
+	// 构建 Redis 键
+	redisKey := "session:" + username + ":" + info
+	// 尝试从 Redis 中获取现有的 token
+	cachedToken, err := dao.Rdb.Get(context.Background(), redisKey).Result()
+	if err == nil { // Redis 中存在 token
+		utils.ResponseSuccess(c, cachedToken, http.StatusOK)
+		return
+	}
+	// Redis 中不存在 token，进行用户验证和生成新 token
+	token, err := service.LoginUser(username, password, email, info)
 	if err != nil {
 		utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
 		return
 	}
+	// 返回新生成的 token
 	utils.ResponseSuccess(c, token, http.StatusOK)
 }
 

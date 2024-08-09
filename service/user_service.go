@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"qasociety/api/middleware"
@@ -34,7 +35,8 @@ func RegisterUser(username, password, email string) error {
 }
 
 // LoginUser 处理用户登录
-func LoginUser(username, password, email string) (string, error) {
+func LoginUser(username, password, email, info string) (string, error) {
+	ctx := context.Background()
 	var savedPassword string
 	var err error
 	// 根据用户名或邮箱查找用户密码
@@ -62,6 +64,13 @@ func LoginUser(username, password, email string) (string, error) {
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	tokenString, err := token.SignedString(middleware.Secret)
+	if err != nil {
+		return "", err
+	}
+	// 构建 Redis 键
+	redisKey := "session:" + username + ":" + info
+	// 存储 token 到 Redis，设置过期时间为 24 小时
+	err = dao.Rdb.SetNX(ctx, redisKey, tokenString, 24*time.Hour).Err()
 	if err != nil {
 		return "", err
 	}

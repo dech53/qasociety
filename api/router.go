@@ -37,7 +37,7 @@ func InitRouter() {
 		questionGroup.PUT("/:id", UpdateQuestion)
 		// 删除问题
 		questionGroup.DELETE("/:id", DeleteQuestion)
-		//添加正常的获取问题列表更能
+		//添加正常的获取问题列表功能
 		questionGroup.GET("/", ListQuestions)
 		// 回答相关路由
 		answerGroup := questionGroup.Group("/:id/answer")

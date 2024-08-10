@@ -2,6 +2,8 @@ package dao
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
@@ -100,6 +102,7 @@ func VerifyCode(email, code string) (bool, error) {
 
 // ResetPassword 执行重置密码
 func ResetPassword(email, newPassword string) error {
+	ctx := context.Background()
 	user, err := GetUserByPattern("email", email)
 	if err != nil {
 		return err
@@ -107,10 +110,15 @@ func ResetPassword(email, newPassword string) error {
 	if newPassword == "" {
 		return errors.New("新密码不能为空")
 	}
-	user.Password = newPassword
+	// 使用 MD5 对密码进行加密
+	hashedPassword := md5.New()
+	hashedPassword.Write([]byte(newPassword))
+	passwordHash := hex.EncodeToString(hashedPassword.Sum(nil))
+	user.Password = passwordHash
 	err = DB.Save(&user).Error
 	if err != nil {
 		return err
 	}
+	Rdb.Del(ctx, strconv.Itoa(user.ID))
 	return nil
 }

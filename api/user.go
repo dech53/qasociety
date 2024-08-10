@@ -38,6 +38,10 @@ func Login(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 	email := c.PostForm("email")
+	if (username == "" && password == "") || (password == "" && email == "") {
+		utils.ResponseFail(c, "有字段为空", http.StatusBadRequest)
+		return
+	}
 	info := utils.GetUserAgent(c)
 	// 构建 Redis 键
 	redisKey := "session:" + username + ":" + info
@@ -92,6 +96,12 @@ func RequestPasswordReset(c *gin.Context) {
 func ResetPassword(c *gin.Context) {
 	email := c.DefaultPostForm("email", "")
 	newPassword := c.DefaultPostForm("newPassword", "")
+	//正则判断
+	err := utils.MatchStr(newPassword)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
+		return
+	}
 	//验证码
 	code := c.PostForm("code")
 	if email == "" || code == "" {

@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"qasociety/api/middleware"
@@ -21,10 +23,14 @@ func RegisterUser(username, password, email string) error {
 	if exists {
 		return errors.New("用户名已存在")
 	}
+	// 使用 MD5 对密码进行加密
+	hashedPassword := md5.New()
+	hashedPassword.Write([]byte(password))
+	passwordHash := hex.EncodeToString(hashedPassword.Sum(nil))
 	// 创建新用户
 	user := model.User{
 		Username: username,
-		Password: password,
+		Password: passwordHash,
 		Email:    email,
 	}
 	_, err = dao.AddUser(user)
@@ -47,11 +53,15 @@ func LoginUser(username, password, email, info string) (string, error) {
 	} else {
 		return "", errors.New("用户名或邮箱不能为空")
 	}
+	// 使用 MD5 对密码进行加密
+	hashedPassword := md5.New()
+	hashedPassword.Write([]byte(password))
+	passwordHash := hex.EncodeToString(hashedPassword.Sum(nil))
 	if err != nil {
 		return "", err
 	}
 	// 检查密码是否正确
-	if savedPassword != password {
+	if savedPassword != passwordHash {
 		return "", errors.New("密码错误")
 	}
 	// 生成 JWT token

@@ -10,11 +10,12 @@ func SendEmailCode(code, email string) error {
 	host := "smtp.qq.com"
 	port := 25
 	userName := "2496916936@qq.com"
+	//授权码
 	passWord := ""
 	m := gomail.NewMessage()
 	m.SetHeader("From", userName)
 	m.SetHeader("From", "dech53"+"<"+userName+">")
-	m.SetHeader("To", "2496916936@qq.com")
+	m.SetHeader("To", email)
 	m.SetHeader("Subject", "重置密码")
 	m.SetBody("text/plain", message)
 	d := gomail.NewDialer(

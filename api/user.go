@@ -20,8 +20,12 @@ func Register(c *gin.Context) {
 		utils.ResponseFail(c, "有字段为空", http.StatusBadRequest)
 		return
 	}
-
-	err := service.RegisterUser(username, password, email)
+	err := utils.MatchStr(password)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
+		return
+	}
+	err = service.RegisterUser(username, password, email)
 	if err != nil {
 		utils.ResponseFail(c, err.Error(), http.StatusInternalServerError)
 		return

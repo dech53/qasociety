@@ -47,6 +47,10 @@
 
 `/user/register`用户注册
 
+`/user/request_password_reset`重置密码请求
+
+`/user/reset_password`执行重置密码
+
 ##### 问题路由组
 
 **POST**`/question/create`创建问题

@@ -164,3 +164,21 @@ func ListQuestions(c *gin.Context) {
 	}
 	utils.ResponseSuccess(c, questions, http.StatusOK)
 }
+
+// GetQuestionLikesCount 获取问题点赞数
+func GetQuestionLikesCount(c *gin.Context) {
+	//获取请求ID
+	idStr := c.Param("id")
+	//ID转int
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		utils.ResponseFail(c, "无效的问题 ID", http.StatusBadRequest)
+		return
+	}
+	counts, err := dao.GetQuestionLikesCount(id)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
+		return
+	}
+	utils.ResponseSuccess(c, counts, http.StatusOK)
+}

@@ -1,7 +1,10 @@
 package dao
 
 import (
+	"context"
+	"fmt"
 	"qasociety/model"
+	"strconv"
 )
 
 // AddAnswer 添加回复
@@ -54,4 +57,21 @@ func GetAllAnswers(questionID int) ([]model.Answer, error) {
 		return nil, err
 	}
 	return answers, nil
+}
+
+// GetAnswerLikesCount 获取回复点赞数
+func GetAnswerLikesCount(answerID int) (int, error) {
+	mysqlCountResult := DB.Exec("SELECT COUNT(*) FROM likes where answer_id = ?", answerID)
+	if mysqlCountResult.Error != nil {
+		return 0, mysqlCountResult.Error
+	}
+	mysqlCount := mysqlCountResult.RowsAffected
+	fmt.Println(mysqlCount)
+	redisKey := "answer:likes:" + strconv.Itoa(answerID)
+	redisCount, err := Rdb.SCard(context.Background(), redisKey).Result()
+	if err != nil {
+		return 0, err
+	}
+	totalLikes := int(mysqlCount) + int(redisCount) + 1
+	return totalLikes, nil
 }

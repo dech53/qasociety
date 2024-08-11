@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// AddQuestion 创建问题
 func AddQuestion(question model.Question) error {
 	questionACount := model.QuestionAnswerCount{
 		QuestionID:  question.ID,
@@ -17,6 +18,8 @@ func AddQuestion(question model.Question) error {
 	DB.Model(&model.QuestionAnswerCount{}).Create(&questionACount)
 	return DB.Model(&model.Question{}).Create(&question).Error
 }
+
+// GetQuestionByID 通过ID查找问题
 func GetQuestionByID(questionID int) (*model.Question, error) {
 	var question model.Question
 	result := DB.Take(&question, questionID)
@@ -25,6 +28,8 @@ func GetQuestionByID(questionID int) (*model.Question, error) {
 	}
 	return &question, nil
 }
+
+// UpdateQuestion 更新问题
 func UpdateQuestion(questionID int, title, content string) error {
 	ctx := context.Background()
 	var question model.Question
@@ -56,6 +61,8 @@ func UpdateQuestion(questionID int, title, content string) error {
 	})
 	return nil
 }
+
+// DeleteQuestion 删除问题
 func DeleteQuestion(questionID int) error {
 	ctx := context.Background()
 	answers, err := GetAllAnswers(questionID)
@@ -131,4 +138,21 @@ func GetTopQuestions(order string, offset, pageSize int) ([]model.QuestionAnswer
 		return nil, err
 	}
 	return questions, nil
+}
+
+// GetQuestionLikesCount 获取问题点赞数
+func GetQuestionLikesCount(id int) (int, error) {
+	var counts int
+	answers, err := GetAllAnswers(id)
+	if err != nil {
+		return 0, err
+	}
+	for _, answer := range answers {
+		answerCount, err := GetAnswerLikesCount(answer.ID)
+		if err != nil {
+			return 0, err
+		}
+		counts += answerCount
+	}
+	return counts, nil
 }

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"qasociety/service"
@@ -108,4 +109,82 @@ func DeleteAnswer(c *gin.Context) {
 		return
 	}
 	utils.ResponseSuccess(c, "删除成功", http.StatusOK)
+}
+func LikeAnswer(c *gin.Context) {
+	userID, err := utils.GetUserID(c)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	AnswerIdStr := c.Param("answer_id")
+	answerId, err := strconv.Atoi(AnswerIdStr)
+	if err != nil {
+		utils.ResponseFail(c, "不合法的回复ID", http.StatusBadRequest)
+		return
+	}
+	//检查回复ID是否存在
+	_, err = dao.GetAnswerByID(answerId)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusBadGateway)
+		return
+	}
+	// 3. 检查用户是否已经点赞过该回答
+	if isLiked, err := utils.IsUserLikedAnswer(userID, answerId); err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusInternalServerError)
+		return
+	} else if isLiked {
+		err = UnlikeAnswer(c, userID, answerId)
+		if err != nil {
+			utils.ResponseFail(c, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		utils.ResponseSuccess(c, "取消点赞成功", http.StatusOK)
+		return
+	}
+	err = utils.PublishLikeEvent(userID, answerId)
+	if err != nil {
+		utils.ResponseFail(c, "点赞失败", http.StatusInternalServerError)
+		return
+	}
+	utils.ResponseSuccess(c, "点赞成功", http.StatusOK)
+}
+func UnlikeAnswer(c *gin.Context, userID, answerId int) error {
+	redisKey := "answer:likes:" + strconv.Itoa(answerId)
+	// 检查 userID 是否是 Redis Set 的成员
+	isMember, err := dao.Rdb.SIsMember(context.Background(), redisKey, userID).Result()
+	if err != nil {
+		// 如果 Redis 操作失败，返回错误
+		utils.ResponseFail(c, "Error checking like status in Redis", http.StatusInternalServerError)
+		return err
+	}
+	if isMember {
+		// 如果在 Redis 中找到了记录，从 Set 中移除
+		err = dao.DeleteThumbRedis(redisKey, userID)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = dao.DeleteThumbMysql(answerId, userID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+func CheckWhetherLike(c *gin.Context) {
+
+}
+func GetAnswerLikesCount(c *gin.Context) {
+	answerIdStr := c.Param("answer_id")
+	answerId, err := strconv.Atoi(answerIdStr)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
+		return
+	}
+	counts, err := dao.GetAnswerLikesCount(answerId)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
+		return
+	}
+	utils.ResponseSuccess(c, counts, http.StatusOK)
 }

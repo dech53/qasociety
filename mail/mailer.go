@@ -5,6 +5,7 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
+// SendEmailCode 发送验证码
 func SendEmailCode(code, email string) error {
 	message := "你的验证码为" + code + ",3分钟内有效"
 	host := "smtp.qq.com"

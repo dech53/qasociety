@@ -27,6 +27,8 @@ func InitRouter() {
 	{
 		// 需要JWT认证的路由
 		questionGroup.Use(middleware.JWTAuthMiddleware())
+		// 获取问题的点赞数
+		questionGroup.GET("/:id/likes/count", GetQuestionLikesCount)
 		// 创建问题
 		questionGroup.POST("/create", CreateQuestion)
 		// 分页查询获取热门问题列表
@@ -52,6 +54,12 @@ func InitRouter() {
 			answerGroup.GET("/search", SearchAnswers)
 			// 删除回答
 			answerGroup.DELETE("/:answer_id", DeleteAnswer)
+			// 点赞回答
+			answerGroup.POST("/:answer_id/like", LikeAnswer)
+			// 检查是否已点赞
+			answerGroup.GET("/:answer_id/check-like", CheckWhetherLike)
+			// 获取点赞数
+			answerGroup.GET("/:answer_id/likes/count", GetAnswerLikesCount)
 			// 评论相关路由
 			commentGroup := answerGroup.Group("/:answer_id/comment")
 			{

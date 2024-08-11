@@ -37,3 +37,10 @@ func updateRedis() {
 		}
 	}
 }
+
+// 取消点赞
+func DeleteThumbRedis(redisKey string, userID int) error {
+	ctx := context.Background()
+	_, err := Rdb.SRem(ctx, redisKey, userID).Result()
+	return err
+}

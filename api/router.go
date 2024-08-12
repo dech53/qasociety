@@ -60,8 +60,6 @@ func InitRouter() {
 			answerGroup.DELETE("/:answer_id", DeleteAnswer)
 			// 点赞回答
 			answerGroup.POST("/:answer_id/like", LikeAnswer)
-			// 检查是否已点赞
-			answerGroup.GET("/:answer_id/check-like", CheckWhetherLike)
 			// 获取点赞数
 			answerGroup.GET("/:answer_id/likes/count", GetAnswerLikesCount)
 			// 评论相关路由

@@ -171,9 +171,6 @@ func UnlikeAnswer(c *gin.Context, userID, answerId int) error {
 	}
 	return nil
 }
-func CheckWhetherLike(c *gin.Context) {
-
-}
 func GetAnswerLikesCount(c *gin.Context) {
 	answerIdStr := c.Param("answer_id")
 	answerId, err := strconv.Atoi(answerIdStr)

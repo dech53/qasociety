@@ -29,6 +29,11 @@
 - `questionID`:问题ID
 - `answercount`:问题回复数
 
+##### **点赞记录表(`likes`):**
+
+- `answer_id`:回复ID
+- `user_id`:用户ID
+
 **Response返回类型**
 
 ```
@@ -43,13 +48,17 @@
 
 **用户路由组**
 
-`/user/login`用户登录
+**POST**`/user/login`用户登录
 
-`/user/register`用户注册
+**POST**`/user/register`用户注册
 
-`/user/request_password_reset`重置密码请求
+**POST**`/user/request_password_reset`重置密码请求
 
-`/user/reset_password`执行重置密码
+**POST**`/user/reset_password`执行重置密码
+
+**POST**`/user/request_loginByCode`验证码登录请求
+
+**POST**`user/login_by_code`通过验证码登录
 
 ##### 问题路由组
 
@@ -65,6 +74,8 @@
 
 **GET**`/question/`正常获取问题列表
 
+**GET**`/question/:id/likes/count`获取问题点赞数
+
 ##### 回复路由组
 
 **POST**`/question/:id/answer/create`创建回复
@@ -72,6 +83,10 @@
 **GET**`/question/:id/answer/search`分页搜索回复
 
 **DELETE**`question/:id/answer/:answer_id`删除回复
+
+**POST**`/question/:id/:answer_id/like`点赞回复
+
+**GET**`/question/:id/:answer_id/likes/count`获取回复点赞数
 
 ##### 评论路由组
 
@@ -181,14 +196,15 @@
    - 验证用户登录时，验证账号和密码是否正确。
    - 通过Redis查找登录token，通过username+设备信息确认唯一登录
    - 添加正则验证密码格式是否正确
-   
+   - 通过邮箱验证码用户登录
 2. **验证码功能**:
    - 使用 Gomail 发送邮件验证码。
    - 验证码存储在 Redis 中，并通过 Redis 验证验证码的正确性。
-
 3. **热门问题排行**:
    - 使用 Redis 存储和获取 Top10 热门问题数据。
-
 4. **问题、回答、评论管理**:
    - 使用 MySQL 存储问题、回答、评论的持久化数据。
    - 支持问题、回答、评论的创建、查询和删除功能。
+5. **点赞实现**:
+   - 使用redis缓存一定时间内添加的点赞
+   - 开一个新线程固定周期将redis中的点赞信息保存进mysql中

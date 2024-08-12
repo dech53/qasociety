@@ -44,5 +44,19 @@ func GetAllComments(AnswerID int) ([]model.Comment, error) {
 
 // RemoveComments 删除多条评论
 func RemoveComments(comments []model.Comment) error {
-	return DB.Delete(&comments).Error
+	if len(comments) == 0 {
+		return nil
+	}
+	// 提取评论的 ID 以生成 SQL 查询
+	var ids []int
+	for _, comment := range comments {
+		ids = append(ids, comment.ID)
+	}
+	// 构建 SQL 删除语句
+	query := "DELETE FROM comments WHERE id IN (?)"
+	// 执行 SQL 语句
+	if err := DB.Exec(query, ids).Error; err != nil {
+		return err
+	}
+	return nil
 }

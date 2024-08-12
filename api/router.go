@@ -21,6 +21,10 @@ func InitRouter() {
 		userGroup.POST("/request_password_reset", RequestPasswordReset)
 		//执行重置密码
 		userGroup.POST("/reset_password", ResetPassword)
+		//验证码登录请求
+		userGroup.POST("/request_loginByCode", LoginByCodeRequest)
+		//验证码登录验证
+		userGroup.POST("/login_by_code", LoginByCode)
 	}
 	// 问题相关路由
 	questionGroup := r.Group("/question")

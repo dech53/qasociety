@@ -10,7 +10,6 @@ type Question struct {
 	Content     string    `json:"content" gorm:"type:text"`
 	CreatedTime time.Time `json:"created_time" gorm:"autoCreateTime"` // 自动创建时间
 	UpdatedTime time.Time `json:"updated_time"`                       // 最新评论的创建时间
-	Like        int       `json:"like" gorm:"not null"`
 }
 
 // Answer 代表回答表
@@ -40,6 +39,6 @@ type QuestionAnswerCount struct {
 
 // Like 代表回复和用户之间的点赞关系
 type Like struct {
-	AnswerID int `json:"answer_id" gorm:"primaryKey;index;not null"`
+	AnswerID int `json:"answer_id" gorm:"index;not null"`
 	UserID   int `json:"user_id" gorm:"index;not null"`
 }

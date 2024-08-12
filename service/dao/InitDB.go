@@ -51,7 +51,7 @@ func setCount() {
 
 // WriteMysqlFromRedis 从redis中读取数据并写入mysql中
 func WriteMysqlFromRedis() {
-	ticker := time.NewTicker(5 * time.Minute)
+	ticker := time.NewTicker(1 * time.Minute)
 	for range ticker.C {
 		ctx := context.Background()
 		// 获取所有匹配的Redis键
@@ -68,7 +68,7 @@ func WriteMysqlFromRedis() {
 					AnswerID: ExtractAnswerIDFromKey(key),
 					UserID:   memberInt,
 				}
-				DB.Create(&like).Model(&model.Like{})
+				DB.Create(&like)
 			}
 			Rdb.Del(ctx, key)
 		}
@@ -77,11 +77,7 @@ func WriteMysqlFromRedis() {
 
 // DeleteThumbMysql 从mysql中删除点赞信息
 func DeleteThumbMysql(answerID, userID int) error {
-	like := model.Like{
-		AnswerID: answerID,
-		UserID:   userID,
-	}
-	return DB.Delete(&like).Model(&model.Like{}).Error
+	return DB.Exec("DELETE FROM likes where answer_id = ? AND user_id = ?", answerID, userID).Error
 }
 
 // ExtractAnswerIDFromKey 工具函数

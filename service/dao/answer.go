@@ -46,7 +46,8 @@ func RemoveAnswer(answer *model.Answer) error {
 	if err != nil {
 		return err
 	}
-	return DB.Delete(answer).Error
+	DB.Exec("DELETE from likes where answer_id = ?", answer.ID)
+	return DB.Exec("DELETE from answers where id = ?", answer.ID).Error
 }
 
 // GetAllAnswers 通过问题ID获取其ID下的所有回复

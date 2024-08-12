@@ -6,18 +6,18 @@ import (
 )
 
 // SendEmailCode 发送验证码
-func SendEmailCode(code, email string) error {
+func SendEmailCode(code, email, title string) error {
 	message := "你的验证码为" + code + ",3分钟内有效"
 	host := "smtp.qq.com"
 	port := 25
 	userName := "2496916936@qq.com"
 	//授权码
-	passWord := ""
+	passWord := "dqvuuosdruqjeaca"
 	m := gomail.NewMessage()
 	m.SetHeader("From", userName)
 	m.SetHeader("From", "dech53"+"<"+userName+">")
-	m.SetHeader("To", email)
-	m.SetHeader("Subject", "重置密码")
+	m.SetHeader("To", "2496916936@qq.com")
+	m.SetHeader("Subject", title)
 	m.SetBody("text/plain", message)
 	d := gomail.NewDialer(
 		host,

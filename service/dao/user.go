@@ -6,10 +6,12 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"qasociety/model"
 	"strconv"
+	"strings"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // AddUser 添加用户
@@ -72,28 +74,31 @@ func GetUserByPattern(pattern, value string) (model.User, error) {
 }
 
 // SetCodeRedis 设置验证码到redis
-func SetCodeRedis(userID string, code string) (bool, error) {
+func SetCodeRedis(userID string, code string, pattern string) (bool, error) {
 	ctx := context.Background()
-	result, err := Rdb.SetNX(ctx, userID, code, 3*time.Minute).Result()
+	result, err := Rdb.SetNX(ctx, "user:"+pattern+":"+userID, code, 3*time.Minute).Result()
 	return result, err
 }
 
 // GetExpireTime 获取过期时间
-func GetExpireTime(userID string) (time.Duration, error) {
+func GetExpireTime(userID string, pattern string) (time.Duration, error) {
 	ctx := context.Background()
-	restTime, err := Rdb.TTL(ctx, userID).Result()
+	restTime, err := Rdb.TTL(ctx, "user:"+pattern+":"+userID).Result()
 	return restTime, err
 }
 
 // VerifyCode 校验验证码
-func VerifyCode(email, code string) (bool, error) {
+func VerifyCode(email, code, pattern string) (bool, error) {
 	ctx := context.Background()
 	user, err := GetUserByPattern("email", email)
 	if err != nil {
 		return false, err
 	}
 	userID := strconv.Itoa(user.ID)
-	realCode, err := Rdb.Get(ctx, userID).Result()
+	realCode, err := Rdb.Get(ctx, "user:"+pattern+":"+userID).Result()
+	fmt.Printf("realCode: '%s', code: '%s'\n", realCode, code)
+	realCode = strings.TrimSpace(realCode)
+	code = strings.TrimSpace(code)
 	if realCode != code {
 		return false, errors.New("验证码错误")
 	}

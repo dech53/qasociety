@@ -5,12 +5,14 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
-	"github.com/dgrijalva/jwt-go"
+	"fmt"
 	"qasociety/api/middleware"
 	"qasociety/model"
 	"qasociety/service/dao"
 	"strconv"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 // RegisterUser 处理用户注册
@@ -41,7 +43,7 @@ func RegisterUser(username, password, email string) error {
 }
 
 // LoginUser 处理用户登录
-func LoginUser(username, password, email, info string) (string, error) {
+func LoginUser(username, password, email, info, mode string) (string, error) {
 	ctx := context.Background()
 	var savedPassword string
 	var err error
@@ -60,10 +62,13 @@ func LoginUser(username, password, email, info string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	// 检查密码是否正确
-	if savedPassword != passwordHash {
-		return "", errors.New("密码错误")
+	if mode == "" {
+		// 检查密码是否正确
+		if savedPassword != passwordHash {
+			return "", errors.New("密码错误")
+		}
 	}
+
 	// 生成 JWT token
 	claim := model.MyClaims{
 		Username: username,
@@ -91,15 +96,20 @@ func GetUserByPattern(pattern, value string) (model.User, error) {
 }
 func ResetRequest(code string, user model.User) (bool, error) {
 	userID := strconv.Itoa(user.ID)
-	return dao.SetCodeRedis(userID, code)
+	return dao.SetCodeRedis(userID, code, "resetPassword")
 }
-func GetExpireTime(user model.User) (time.Duration, error) {
+func GetExpireTime(user model.User, pattern string) (time.Duration, error) {
 	userID := strconv.Itoa(user.ID)
-	return dao.GetExpireTime(userID)
+	return dao.GetExpireTime(userID, pattern)
 }
-func VerifyCode(email, code string) (bool, error) {
-	return dao.VerifyCode(email, code)
+func VerifyCode(email, code, pattern string) (bool, error) {
+	return dao.VerifyCode(email, code, pattern)
 }
 func ResetPassword(email, newPassword string) error {
 	return dao.ResetPassword(email, newPassword)
+}
+func LoginByCodeRequest(code string, user model.User) (bool, error) {
+	userID := strconv.Itoa(user.ID)
+	fmt.Println(userID)
+	return dao.SetCodeRedis(userID, code, "loginCode")
 }

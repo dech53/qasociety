@@ -52,7 +52,7 @@ func Login(c *gin.Context) {
 		return
 	}
 	// Redis 中不存在 token，进行用户验证和生成新 token
-	token, err := service.LoginUser(username, password, email, info)
+	token, err := service.LoginUser(username, password, email, info, "")
 	if err != nil {
 		utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
 		return
@@ -76,14 +76,14 @@ func RequestPasswordReset(c *gin.Context) {
 		return
 	}
 	if flag {
-		err := mail.SendEmailCode(code, email)
+		err := mail.SendEmailCode(code, email, "重置密码")
 		if err != nil {
 			utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
 			return
 		}
 		utils.ResponseSuccess(c, "验证码已发送,3分钟内有效", http.StatusOK)
 	} else {
-		expireTime, err := service.GetExpireTime(user)
+		expireTime, err := service.GetExpireTime(user, "resetPassword")
 		if err != nil {
 			utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
 			return
@@ -108,7 +108,7 @@ func ResetPassword(c *gin.Context) {
 		utils.ResponseFail(c, "邮箱或验证码为空", http.StatusBadRequest)
 		return
 	}
-	flag, err := service.VerifyCode(email, code)
+	flag, err := service.VerifyCode(email, code, "resetPassword")
 	if err != nil {
 		utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
 		return
@@ -124,5 +124,67 @@ func ResetPassword(c *gin.Context) {
 	} else {
 		utils.ResponseFail(c, "密码修改失败", http.StatusBadRequest)
 		return
+	}
+}
+func LoginByCodeRequest(c *gin.Context) {
+	email := c.PostForm("email")
+	user, err := service.GetUserByPattern("email", email)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
+		return
+	}
+	code := utils.GenerateCode()
+	flag, err := service.LoginByCodeRequest(code, user)
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if flag {
+		err := mail.SendEmailCode(code, email, "登陆验证码")
+		if err != nil {
+			utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
+			return
+		}
+		utils.ResponseSuccess(c, "验证码已发送,3分钟内有效", http.StatusOK)
+	} else {
+		expireTime, err := service.GetExpireTime(user, "loginCode")
+		if err != nil {
+			utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
+			return
+		}
+		utils.ResponseSuccess(c, "请等待"+strconv.FormatInt(int64(expireTime.Seconds()), 10)+"秒后重试", http.StatusOK)
+	}
+}
+func LoginByCode(c *gin.Context) {
+	email := c.PostForm("email")
+	code := c.PostForm("code")
+	if email == "" || code == "" {
+		utils.ResponseFail(c, "邮箱或验证码为空", http.StatusBadRequest)
+		return
+	}
+	user, err := service.GetUserByPattern("email", email)
+	flag, err := service.VerifyCode(email, code, "loginCode")
+	if err != nil {
+		utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if flag {
+		info := utils.GetUserAgent(c)
+		// 构建 Redis 键
+		redisKey := "session:" + user.Username + ":" + info
+		// 尝试从 Redis 中获取现有的 token
+		cachedToken, err := dao.Rdb.Get(context.Background(), redisKey).Result()
+		if err == nil { // Redis 中存在 token
+			utils.ResponseSuccess(c, cachedToken, http.StatusOK)
+			return
+		}
+		// Redis 中不存在 token，进行用户验证和生成新 token
+		token, err := service.LoginUser(user.Username, user.Password, email, info, "withoutVerifyPassword")
+		if err != nil {
+			utils.ResponseFail(c, err.Error(), http.StatusBadRequest)
+			return
+		}
+		// 返回新生成的 token
+		utils.ResponseSuccess(c, token, http.StatusOK)
 	}
 }

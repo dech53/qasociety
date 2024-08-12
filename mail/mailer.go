@@ -12,11 +12,12 @@ func SendEmailCode(code, email, title string) error {
 	port := 25
 	userName := "2496916936@qq.com"
 	//授权码
-	passWord := "dqvuuosdruqjeaca"
+	passWord := ""
 	m := gomail.NewMessage()
 	m.SetHeader("From", userName)
 	m.SetHeader("From", "dech53"+"<"+userName+">")
-	m.SetHeader("To", "2496916936@qq.com")
+	//测试邮箱填自己的就行
+	m.SetHeader("To", email)
 	m.SetHeader("Subject", title)
 	m.SetBody("text/plain", message)
 	d := gomail.NewDialer(

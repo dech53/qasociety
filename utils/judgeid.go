@@ -1,5 +1,6 @@
 package utils
 
+//处理请求头中的数据
 import (
 	"errors"
 	"github.com/gin-gonic/gin"

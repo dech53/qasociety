@@ -110,6 +110,8 @@ func DeleteAnswer(c *gin.Context) {
 	}
 	utils.ResponseSuccess(c, "删除成功", http.StatusOK)
 }
+
+// LikeAnswer 点赞回复
 func LikeAnswer(c *gin.Context) {
 	userID, err := utils.GetUserID(c)
 	if err != nil {
@@ -148,6 +150,8 @@ func LikeAnswer(c *gin.Context) {
 	}
 	utils.ResponseSuccess(c, "点赞成功", http.StatusOK)
 }
+
+// UnlikeAnswer 取消回复点赞
 func UnlikeAnswer(c *gin.Context, userID, answerId int) error {
 	redisKey := "answer:likes:" + strconv.Itoa(answerId)
 	// 检查 userID 是否是 Redis Set 的成员
@@ -171,6 +175,8 @@ func UnlikeAnswer(c *gin.Context, userID, answerId int) error {
 	}
 	return nil
 }
+
+// GetAnswerLikesCount 获取回复点赞数
 func GetAnswerLikesCount(c *gin.Context) {
 	answerIdStr := c.Param("answer_id")
 	answerId, err := strconv.Atoi(answerIdStr)

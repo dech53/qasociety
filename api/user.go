@@ -126,6 +126,8 @@ func ResetPassword(c *gin.Context) {
 		return
 	}
 }
+
+// LoginByCodeRequest 验证码登录请求
 func LoginByCodeRequest(c *gin.Context) {
 	email := c.PostForm("email")
 	user, err := service.GetUserByPattern("email", email)
@@ -155,6 +157,8 @@ func LoginByCodeRequest(c *gin.Context) {
 		utils.ResponseSuccess(c, "请等待"+strconv.FormatInt(int64(expireTime.Seconds()), 10)+"秒后重试", http.StatusOK)
 	}
 }
+
+// LoginByCode 执行验证码登录
 func LoginByCode(c *gin.Context) {
 	email := c.PostForm("email")
 	code := c.PostForm("code")

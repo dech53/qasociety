@@ -5,6 +5,7 @@ import (
 	"github.com/dlclark/regexp2"
 )
 
+// MatchStr 正则匹配
 func MatchStr(str string) error {
 	expr := `^(?![0-9a-zA-Z]+$)(?![a-zA-Z!@#$%^&*]+$)(?![0-9!@#$%^&*]+$)[0-9A-Za-z!@#$%^&*]{8,16}$`
 	reg, _ := regexp2.Compile(expr, 0)
